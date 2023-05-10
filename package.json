@@ -1,0 +1,78 @@
+{
+  "name": "@groundbreak/groundbreak-player",
+  "version": "1.10.1",
+  "description": "An open source Mux player web component that Just Works™",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.mjs",
+  "browser": "./dist/index.mjs",
+  "unpkg": "./dist/mux-player.js",
+  "jsdelivr": "./dist/mux-player.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.cjs.js"
+    },
+    "./themes/microvideo": "./themes/microvideo.js",
+    "./themes/minimal": "./themes/minimal.js"
+  },
+  "types": "dist/types-ts3.4/index.d.ts",
+  "typesVersions": {
+    ">=4.3.5": {
+      "*": [
+        "dist/types/index.d.ts"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/groundbreak/groundbreak-player",
+    "directory": "/"
+  },
+  "author": "Mux, Inc.",
+  "license": "MIT",
+  "scripts": {
+    "clean": "shx rm -rf dist/ && shx rm -rf src/polyfills",
+    "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
+    "test": "web-test-runner **/*test.js --port 8001 --coverage --config test/web-test-runner.config.mjs --root-dir ../..",
+    "posttest": "replace 'SF:src/' 'SF:packages/mux-player/src/' coverage/lcov.info --silent",
+    "i18n": "yarn build:esm --keep-names && i18n-utils dist/index.mjs ./lang",
+    "dev:iife": "yarn build:iife --watch=forever",
+    "dev:esm": "yarn build:esm --watch=forever",
+    "dev:esm-module": "yarn build:esm-module --watch=forever",
+    "dev:cjs": "yarn build:cjs --watch=forever",
+    "dev:types": "yarn build:types -w",
+    "dev": "npm-run-all --parallel dev:types dev:esm dev:cjs dev:esm-module dev:iife",
+    "build:esm": "esbuilder src/index.ts --format=esm --out-extension:.js=.mjs",
+    "build:esm-module": "esbuilder src/index.ts --format=esm-module --outfile=dist/mux-player.mjs",
+    "build:iife": "esbuilder src/index.ts --format=iife --outfile=dist/mux-player.js",
+    "build:cjs": "esbuilder src/index.ts --format=cjs --out-extension:.js=.cjs.js",
+    "copypolyfills": "shx mkdir -p src/polyfills && shx cp ../../shared/polyfills/index.ts ./src/polyfills/index.ts",
+    "build:types": "tsc",
+    "postbuild:types": "downlevel-dts ./dist/types ./dist/types-ts3.4",
+    "build": "npm-run-all --parallel build:esm build:iife build:cjs build:esm-module",
+    "create-release-notes": "create-release-notes ./CHANGELOG.md",
+    "publish-release": "../../scripts/publish.sh"
+  },
+  "dependencies": {
+    "@mux/mux-video": "0.15.1",
+    "@mux/playback-core": "0.18.0",
+    "media-chrome": "0.21.1"
+  },
+  "devDependencies": {
+    "@mux/esbuilder": "file:./scripts/esbuilder",
+    "@open-wc/testing": "^3.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "@web/dev-server-esbuild": "^0.3.2",
+    "@web/dev-server-import-maps": "^0.0.6",
+    "@web/test-runner": "^0.13.26",
+    "@web/test-runner-playwright": "^0.9.0",
+    "downlevel-dts": "^0.11.0",
+    "eslint": "^8.24.0",
+    "npm-run-all": "^4.1.5",
+    "replace": "^1.2.1",
+    "shx": "^0.3.4",
+    "typescript": "^4.9.4"
+  }
+}

@@ -1,0 +1,116 @@
+:host {
+  --media-control-display: var(--controls);
+  --media-loading-indicator-display: var(--loading-indicator);
+  --media-dialog-display: var(--dialog);
+  --media-play-button-display: var(--play-button);
+  --media-live-button-display: var(--live-button);
+  --media-seek-backward-button-display: var(--seek-backward-button);
+  --media-seek-forward-button-display: var(--seek-forward-button);
+  --media-mute-button-display: var(--mute-button);
+  --media-captions-button-display: var(--captions-button);
+  --media-captions-selectmenu-display: var(--captions-selectmenu, var(--media-captions-button-display));
+  --media-airplay-button-display: var(--airplay-button);
+  --media-pip-button-display: var(--pip-button);
+  --media-fullscreen-button-display: var(--fullscreen-button);
+  --media-cast-button-display: var(--cast-button);
+  --media-playback-rate-button-display: var(--playback-rate-button);
+  --media-volume-range-display: var(--volume-range);
+  --media-time-range-display: var(--time-range);
+  --media-time-display-display: var(--time-display);
+  --media-duration-display-display: var(--duration-display);
+  --media-title-display-display: var(--title-display);
+
+  display: inline-block;
+  width: 100%;
+}
+
+/* Hide custom elements that are not defined yet */
+:not(:defined) {
+  display: none;
+}
+
+a {
+  color: #fff;
+  font-size: 0.9em;
+  text-decoration: underline;
+}
+
+media-theme {
+  width: 100%;
+  height: 100%;
+  direction: ltr;
+}
+
+::part(top),
+[part~='top'] {
+  --media-control-display: var(--controls, var(--top-controls));
+  --media-play-button-display: var(--play-button, var(--top-play-button));
+  --media-live-button-display: var(--live-button, var(--top-live-button));
+  --media-seek-backward-button-display: var(--seek-backward-button, var(--top-seek-backward-button));
+  --media-seek-forward-button-display: var(--seek-forward-button, var(--top-seek-forward-button));
+  --media-mute-button-display: var(--mute-button, var(--top-mute-button));
+  --media-captions-button-display: var(--captions-button, var(--top-captions-button));
+  --media-captions-selectmenu-display: var(
+    --captions-selectmenu,
+    var(--media-captions-button-display, var(--top-captions-selectmenu))
+  );
+  --media-airplay-button-display: var(--airplay-button, var(--top-airplay-button));
+  --media-pip-button-display: var(--pip-button, var(--top-pip-button));
+  --media-fullscreen-button-display: var(--fullscreen-button, var(--top-fullscreen-button));
+  --media-cast-button-display: var(--cast-button, var(--top-cast-button));
+  --media-playback-rate-button-display: var(--playback-rate-button, var(--top-playback-rate-button));
+  --media-volume-range-display: var(--volume-range, var(--top-volume-range));
+  --media-time-range-display: var(--time-range, var(--top-time-range));
+  --media-time-display-display: var(--time-display, var(--top-time-display));
+  --media-duration-display-display: var(--duration-display, var(--top-duration-display));
+  --media-title-display-display: var(--title-display, var(--top-title-display));
+}
+
+::part(center),
+[part~='center'] {
+  --media-control-display: var(--controls, var(--center-controls));
+  --media-play-button-display: var(--play-button, var(--center-play-button));
+  --media-live-button-display: var(--live-button, var(--center-live-button));
+  --media-seek-backward-button-display: var(--seek-backward-button, var(--center-seek-backward-button));
+  --media-seek-forward-button-display: var(--seek-forward-button, var(--center-seek-forward-button));
+  --media-mute-button-display: var(--mute-button, var(--center-mute-button));
+  --media-captions-button-display: var(--captions-button, var(--center-captions-button));
+  --media-captions-selectmenu-display: var(
+    --captions-selectmenu,
+    var(--media-captions-button-display, var(--center-captions-selectmenu))
+  );
+  --media-airplay-button-display: var(--airplay-button, var(--center-airplay-button));
+  --media-pip-button-display: var(--pip-button, var(--center-pip-button));
+  --media-fullscreen-button-display: var(--fullscreen-button, var(--center-fullscreen-button));
+  --media-cast-button-display: var(--cast-button, var(--center-cast-button));
+  --media-playback-rate-button-display: var(--playback-rate-button, var(--center-playback-rate-button));
+  --media-volume-range-display: var(--volume-range, var(--center-volume-range));
+  --media-time-range-display: var(--time-range, var(--center-time-range));
+  --media-time-display-display: var(--time-display, var(--center-time-display));
+  --media-duration-display-display: var(--duration-display, var(--center-duration-display));
+}
+
+::part(bottom),
+[part~='bottom'] {
+  --media-control-display: var(--controls, var(--bottom-controls));
+  --media-play-button-display: var(--play-button, var(--bottom-play-button));
+  --media-live-button-display: var(--live-button, var(--bottom-live-button));
+  --media-seek-backward-button-display: var(--seek-backward-button, var(--bottom-seek-backward-button));
+  --media-seek-forward-button-display: var(--seek-forward-button, var(--bottom-seek-forward-button));
+  --media-mute-button-display: var(--mute-button, var(--bottom-mute-button));
+  --media-captions-button-display: var(--captions-button, var(--bottom-captions-button));
+  --media-captions-selectmenu-display: var(
+    --captions-selectmenu,
+    var(--media-captions-button-display, var(--bottom-captions-selectmenu))
+  );
+  --media-airplay-button-display: var(--airplay-button, var(--bottom-airplay-button));
+  --media-pip-button-display: var(--pip-button, var(--bottom-pip-button));
+  --media-fullscreen-button-display: var(--fullscreen-button, var(--bottom-fullscreen-button));
+  --media-cast-button-display: var(--cast-button, var(--bottom-cast-button));
+  --media-playback-rate-button-display: var(--playback-rate-button, var(--bottom-playback-rate-button));
+  --media-volume-range-display: var(--volume-range, var(--bottom-volume-range));
+  --media-time-range-display: var(--time-range, var(--bottom-time-range));
+  --media-time-display-display: var(--time-display, var(--bottom-time-display));
+  --media-duration-display-display: var(--duration-display, var(--bottom-duration-display));
+  --media-title-display-display: var(--title-display, var(--bottom-title-display));
+}

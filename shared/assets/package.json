@@ -1,0 +1,9 @@
+{
+  "name": "@mux/assets",
+  "version": "0.1.0",
+  "main": "./media-assets.json",
+  "repository": "https://github.com/muxinc/elements",
+  "author": "Mux, Inc.",
+  "license": "MIT",
+  "private": true
+}
