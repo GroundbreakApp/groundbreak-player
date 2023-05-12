@@ -1,8 +1,11 @@
-import { globalThis, document } from './polyfills';
-import { MediaController } from 'media-chrome';
-import 'media-chrome/dist/experimental/media-captions-selectmenu.js';
-import { MediaThemeElement } from 'media-chrome/dist/media-theme-element.js';
-import MuxVideoElement, { MediaError, Attributes as MuxVideoAttributes } from '@mux/mux-video';
+import { globalThis, document } from "./polyfills";
+import { MediaController } from "media-chrome";
+import "media-chrome/dist/experimental/media-captions-selectmenu.js";
+import { MediaThemeElement } from "media-chrome/dist/media-theme-element.js";
+import MuxVideoElement, {
+  MediaError,
+  Attributes as MuxVideoAttributes,
+} from "@mux/mux-video";
 import {
   ValueOf,
   Metadata,
@@ -13,8 +16,8 @@ import {
   removeTextTrack,
   CmcdTypes,
   CmcdTypeValues,
-} from '@mux/playback-core';
-import VideoApiElement, { initVideoApi } from './video-api';
+} from "@mux/playback-core";
+import VideoApiElement, { initVideoApi } from "./video-api";
 import {
   getPlayerVersion,
   toPropName,
@@ -22,13 +25,20 @@ import {
   getPosterURLFromPlaybackId,
   getStoryboardURLFromPlaybackId,
   getStreamTypeFromAttr,
-} from './helpers';
-import { template } from './template';
-import { render } from './html';
-import { getErrorLogs } from './errors';
-import { toNumberOrUndefined, i18n, parseJwt, containsComposedNode, camelCase, kebabCase } from './utils';
-import * as logger from './logger';
-import type { MuxTemplateProps, ErrorEvent } from './types';
+} from "./helpers";
+import { template } from "./template";
+import { render } from "./html";
+import { getErrorLogs } from "./errors";
+import {
+  toNumberOrUndefined,
+  i18n,
+  parseJwt,
+  containsComposedNode,
+  camelCase,
+  kebabCase,
+} from "./utils";
+import * as logger from "./logger";
+import type { MuxTemplateProps, ErrorEvent } from "./types";
 
 export { MediaError };
 export type Tokens = {
@@ -38,55 +48,59 @@ export type Tokens = {
 };
 
 const VideoAttributes = {
-  SRC: 'src',
-  POSTER: 'poster',
+  SRC: "src",
+  POSTER: "poster",
 };
 
 const PlayerAttributes = {
-  STYLE: 'style',
-  DEFAULT_HIDDEN_CAPTIONS: 'default-hidden-captions',
-  PRIMARY_COLOR: 'primary-color',
-  SECONDARY_COLOR: 'secondary-color',
-  FORWARD_SEEK_OFFSET: 'forward-seek-offset',
-  BACKWARD_SEEK_OFFSET: 'backward-seek-offset',
-  PLAYBACK_TOKEN: 'playback-token',
-  THUMBNAIL_TOKEN: 'thumbnail-token',
-  STORYBOARD_TOKEN: 'storyboard-token',
-  STORYBOARD_SRC: 'storyboard-src',
-  THUMBNAIL_TIME: 'thumbnail-time',
-  AUDIO: 'audio',
-  NOHOTKEYS: 'nohotkeys',
-  HOTKEYS: 'hotkeys',
-  PLAYBACK_RATES: 'playbackrates',
-  DEFAULT_SHOW_REMAINING_TIME: 'default-show-remaining-time',
-  TITLE: 'title',
-  PLACEHOLDER: 'placeholder',
-  THEME: 'theme',
-  DEFAULT_STREAM_TYPE: 'default-stream-type',
-  TARGET_LIVE_WINDOW: 'target-live-window',
-  NO_VOLUME_PREF: 'no-volume-pref',
+  STYLE: "style",
+  DEFAULT_HIDDEN_CAPTIONS: "default-hidden-captions",
+  PRIMARY_COLOR: "primary-color",
+  SECONDARY_COLOR: "secondary-color",
+  FORWARD_SEEK_OFFSET: "forward-seek-offset",
+  BACKWARD_SEEK_OFFSET: "backward-seek-offset",
+  PLAYBACK_TOKEN: "playback-token",
+  THUMBNAIL_TOKEN: "thumbnail-token",
+  STORYBOARD_TOKEN: "storyboard-token",
+  STORYBOARD_SRC: "storyboard-src",
+  THUMBNAIL_TIME: "thumbnail-time",
+  AUDIO: "audio",
+  NOHOTKEYS: "nohotkeys",
+  HOTKEYS: "hotkeys",
+  PLAYBACK_RATES: "playbackrates",
+  DEFAULT_SHOW_REMAINING_TIME: "default-show-remaining-time",
+  TITLE: "title",
+  PLACEHOLDER: "placeholder",
+  THEME: "theme",
+  DEFAULT_STREAM_TYPE: "default-stream-type",
+  TARGET_LIVE_WINDOW: "target-live-window",
+  NO_VOLUME_PREF: "no-volume-pref",
+};
+const GroundBreakElementAttributes = {
+  WIDGETS: "widgets",
+  ASPECT_RATIO: "aspect-ratio",
 };
 
 const ThemeAttributeNames = [
-  'audio',
-  'backward-seek-offset',
-  'default-show-remaining-time',
-  'default-showing-captions',
-  'noautoseektolive',
-  'disabled',
-  'exportparts',
-  'forward-seek-offset',
-  'hide-duration',
-  'hotkeys',
-  'nohotkeys',
-  'playbackrates',
-  'default-stream-type',
-  'stream-type',
-  'style',
-  'target-live-window',
-  'template',
-  'title',
-  'no-volume-pref',
+  "audio",
+  "backward-seek-offset",
+  "default-show-remaining-time",
+  "default-showing-captions",
+  "noautoseektolive",
+  "disabled",
+  "exportparts",
+  "forward-seek-offset",
+  "hide-duration",
+  "hotkeys",
+  "nohotkeys",
+  "playbackrates",
+  "default-stream-type",
+  "stream-type",
+  "style",
+  "target-live-window",
+  "template",
+  "title",
+  "no-volume-pref",
 ];
 
 function getProps(el: MuxPlayerElement, state?: any): MuxTemplateProps {
@@ -98,12 +112,14 @@ function getProps(el: MuxPlayerElement, state?: any): MuxTemplateProps {
     poster: el.poster,
     storyboard: el.storyboard,
     storyboardSrc: el.getAttribute(PlayerAttributes.STORYBOARD_SRC),
-    placeholder: el.getAttribute('placeholder'),
+    placeholder: el.getAttribute("placeholder"),
     themeTemplate: getThemeTemplate(el),
     thumbnailTime: !el.tokens.thumbnail && el.thumbnailTime,
     autoplay: el.autoplay,
     crossOrigin: el.crossOrigin,
     loop: el.loop,
+    widgets: el.widgets,
+    aspectRatio: el.aspectRatio,
     // NOTE: Renaming internal prop due to state (sometimes derived from attributeChangedCallback attr values)
     // overwriting prop value (type mismatch: string vs. boolean) (CJP)
     noHotKeys: el.hasAttribute(PlayerAttributes.NOHOTKEYS),
@@ -128,7 +144,9 @@ function getProps(el: MuxPlayerElement, state?: any): MuxTemplateProps {
     audio: el.audio,
     defaultStreamType: el.defaultStreamType,
     targetLiveWindow: el.getAttribute(MuxVideoAttributes.TARGET_LIVE_WINDOW),
-    streamType: getStreamTypeFromAttr(el.getAttribute(MuxVideoAttributes.STREAM_TYPE)),
+    streamType: getStreamTypeFromAttr(
+      el.getAttribute(MuxVideoAttributes.STREAM_TYPE)
+    ),
     primaryColor: el.primaryColor,
     secondaryColor: el.secondaryColor,
     forwardSeekOffset: el.forwardSeekOffset,
@@ -137,7 +155,8 @@ function getProps(el: MuxPlayerElement, state?: any): MuxTemplateProps {
     defaultShowRemainingTime: el.defaultShowRemainingTime,
     hideDuration: getHideDuration(el),
     playbackRates: el.getAttribute(PlayerAttributes.PLAYBACK_RATES),
-    customDomain: el.getAttribute(MuxVideoAttributes.CUSTOM_DOMAIN) ?? undefined,
+    customDomain:
+      el.getAttribute(MuxVideoAttributes.CUSTOM_DOMAIN) ?? undefined,
     title: el.getAttribute(PlayerAttributes.TITLE),
     novolumepref: el.hasAttribute(PlayerAttributes.NO_VOLUME_PREF),
     ...state,
@@ -153,33 +172,36 @@ function getThemeTemplate(el: MuxPlayerElement) {
     const templateElement = el.getRootNode()?.getElementById?.(themeName);
     if (templateElement) return templateElement;
 
-    if (!themeName.startsWith('media-theme-')) {
+    if (!themeName.startsWith("media-theme-")) {
       themeName = `media-theme-${themeName}`;
     }
 
-    const ThemeElement = globalThis.customElements.get(themeName) as MediaThemeElement | undefined;
+    const ThemeElement = globalThis.customElements.get(themeName) as
+      | MediaThemeElement
+      | undefined;
     if (ThemeElement?.template) return ThemeElement.template;
   }
 }
 
 function getHideDuration(el: MuxPlayerElement) {
-  const timeDisplay = el.mediaController?.querySelector('media-time-display');
+  const timeDisplay = el.mediaController?.querySelector("media-time-display");
   return (
     timeDisplay &&
     getComputedStyle(timeDisplay as unknown as HTMLElement)
-      .getPropertyValue('--media-duration-display-display')
-      .trim() === 'none'
+      .getPropertyValue("--media-duration-display-display")
+      .trim() === "none"
   );
 }
 
 function getMetadataFromAttrs(el: MuxPlayerElement) {
   return el
     .getAttributeNames()
-    .filter((attrName) => attrName.startsWith('metadata-'))
+    .filter((attrName) => attrName.startsWith("metadata-"))
     .reduce((currAttrs, attrName) => {
       const value = el.getAttribute(attrName);
       if (value !== null) {
-        currAttrs[attrName.replace(/^metadata-/, '').replace(/-/g, '_')] = value;
+        currAttrs[attrName.replace(/^metadata-/, "").replace(/-/g, "_")] =
+          value;
       }
       return currAttrs;
     }, {} as { [key: string]: string });
@@ -188,8 +210,11 @@ function getMetadataFromAttrs(el: MuxPlayerElement) {
 const MuxVideoAttributeNames = Object.values(MuxVideoAttributes);
 const VideoAttributeNames = Object.values(VideoAttributes);
 const PlayerAttributeNames = Object.values(PlayerAttributes);
+const GroundBreakElementAttributeNames = Object.values(
+  GroundBreakElementAttributes
+);
 const playerSoftwareVersion = getPlayerVersion();
-const playerSoftwareName = 'mux-player';
+const playerSoftwareName = "mux-player";
 
 const initialState = {
   dialog: undefined,
@@ -201,7 +226,11 @@ export interface MuxPlayerElementEventMap extends HTMLVideoElementEventMap {
   cuepointschange: CustomEvent<Array<{ time: number; value: any }>>;
 }
 
-interface MuxPlayerElement extends Omit<HTMLVideoElement, 'poster' | 'textTracks' | 'addTextTrack' | 'src'> {
+interface MuxPlayerElement
+  extends Omit<
+    HTMLVideoElement,
+    "poster" | "textTracks" | "addTextTrack" | "src"
+  > {
   addEventListener<K extends keyof MuxPlayerElementEventMap>(
     type: K,
     listener: (this: HTMLMediaElement, ev: MuxPlayerElementEventMap[K]) => any,
@@ -228,12 +257,16 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
   #isInit = false;
   #tokens = {};
   #userInactive = true;
-  #hotkeys = new AttributeTokenList(this, 'hotkeys');
+  #hotkeys = new AttributeTokenList(this, "hotkeys");
   #state: Partial<MuxTemplateProps> = {
     ...initialState,
-    onCloseErrorDialog: () => this.#setState({ dialog: undefined, isDialogOpen: false }),
+    onCloseErrorDialog: () =>
+      this.#setState({ dialog: undefined, isDialogOpen: false }),
     onInitFocusDialog: (e) => {
-      const isFocusedElementInPlayer = containsComposedNode(this, document.activeElement);
+      const isFocusedElementInPlayer = containsComposedNode(
+        this,
+        document.activeElement
+      );
       if (!isFocusedElementInPlayer) e.preventDefault();
     },
   };
@@ -244,13 +277,13 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       ...VideoAttributeNames,
       ...MuxVideoAttributeNames,
       ...PlayerAttributeNames,
+      ...GroundBreakElementAttributeNames,
     ];
   }
 
   constructor() {
     super();
-
-    this.attachShadow({ mode: 'open' });
+    this.attachShadow({ mode: "open" });
     this.#setupCSSProperties();
 
     // If the custom element is defined before the <mux-player> HTML is parsed
@@ -274,21 +307,21 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     // even before they are connected to the main document.
     try {
       customElements.upgrade(this.mediaTheme as Node);
-      if (!(this.mediaTheme instanceof globalThis.HTMLElement)) throw '';
+      if (!(this.mediaTheme instanceof globalThis.HTMLElement)) throw "";
     } catch (error) {
       logger.error(`<media-theme> failed to upgrade!`);
     }
 
     try {
       customElements.upgrade(this.media as Node);
-      if (!(this.media instanceof MuxVideoElement)) throw '';
+      if (!(this.media instanceof MuxVideoElement)) throw "";
     } catch (error) {
-      logger.error('<mux-video> failed to upgrade!');
+      logger.error("<mux-video> failed to upgrade!");
     }
 
     try {
       customElements.upgrade(this.mediaController as Node);
-      if (!(this.mediaController instanceof MediaController)) throw '';
+      if (!(this.mediaController instanceof MediaController)) throw "";
     } catch (error) {
       logger.error(`<media-controller> failed to upgrade!`);
     }
@@ -298,11 +331,12 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     this.#setUpThemeAttributes();
     this.#setUpErrors();
     this.#setUpCaptionsButton();
-    this.#userInactive = this.mediaController?.hasAttribute('user-inactive') ?? true;
+    this.#userInactive =
+      this.mediaController?.hasAttribute("user-inactive") ?? true;
     this.#setUpCaptionsMovement();
     // NOTE: Make sure we re-render when stream type changes to ensure other props-driven
     // template details get updated appropriately (e.g. thumbnails track) (CJP)
-    this.media?.addEventListener('streamtypechange', () => {
+    this.media?.addEventListener("streamtypechange", () => {
       this.#render();
     });
   }
@@ -314,29 +348,31 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     try {
       // @ts-ignore
       window?.CSS?.registerProperty({
-        name: '--media-primary-color',
-        syntax: '<color>',
+        name: "--media-primary-color",
+        syntax: "<color>",
         inherits: true,
       });
       // @ts-ignore
       window?.CSS?.registerProperty({
-        name: '--media-secondary-color',
-        syntax: '<color>',
+        name: "--media-secondary-color",
+        syntax: "<color>",
         inherits: true,
       });
     } catch (e) {}
   }
 
   get mediaTheme(): Element | null | undefined {
-    return this.shadowRoot?.querySelector('media-theme');
+    return this.shadowRoot?.querySelector("media-theme");
   }
 
   get mediaController(): MediaController | null | undefined {
-    return this.mediaTheme?.shadowRoot?.querySelector('media-controller');
+    return this.mediaTheme?.shadowRoot?.querySelector("media-controller");
   }
 
   connectedCallback() {
-    const muxVideo = this.shadowRoot?.querySelector('mux-video') as MuxVideoElement;
+    const muxVideo = this.shadowRoot?.querySelector(
+      "mux-video"
+    ) as MuxVideoElement;
     if (muxVideo) {
       muxVideo.metadata = getMetadataFromAttrs(this);
     }
@@ -348,16 +384,19 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
   }
 
   #render(props: Record<string, any> = {}) {
-    render(template(getProps(this, { ...this.#state, ...props })), this.shadowRoot as Node);
+    render(
+      template(getProps(this, { ...this.#state, ...props })),
+      this.shadowRoot as Node
+    );
   }
 
   #setUpThemeAttributes() {
     // Forward `theme-` prefixed attributes to the theme.
     // e.g. `theme-control-bar-vertical` for the Micro theme.
     const setThemeAttribute = (attributeName: string | null) => {
-      if (!attributeName?.startsWith('theme-')) return;
+      if (!attributeName?.startsWith("theme-")) return;
 
-      const themeAttrName = attributeName.replace(/^theme-/, '');
+      const themeAttrName = attributeName.replace(/^theme-/, "");
       if (ThemeAttributeNames.includes(themeAttrName)) return;
 
       const value = this.getAttribute(attributeName);
@@ -395,7 +434,12 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
         return;
       }
 
-      const { dialog, devlog } = getErrorLogs(error, !window.navigator.onLine, this.playbackId, this.playbackToken);
+      const { dialog, devlog } = getErrorLogs(
+        error,
+        !window.navigator.onLine,
+        this.playbackId,
+        this.playbackToken
+      );
 
       if (devlog.message) {
         logger.devlog(devlog);
@@ -411,7 +455,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
     // Keep this event listener on mux-player instead of calling onError directly
     // from video.onerror. This allows us to simulate errors from the outside.
-    this.addEventListener('error', onError);
+    this.addEventListener("error", onError);
 
     if (this.media) {
       this.media.errorTranslator = (errorEvent: ErrorEvent = {}) => {
@@ -427,13 +471,17 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
         return {
           player_error_code: this.media?.error.code,
-          player_error_message: devlog.message ? String(devlog.message) : errorEvent.player_error_message,
-          player_error_context: devlog.context ? String(devlog.context) : errorEvent.player_error_context,
+          player_error_message: devlog.message
+            ? String(devlog.message)
+            : errorEvent.player_error_message,
+          player_error_context: devlog.context
+            ? String(devlog.context)
+            : errorEvent.player_error_context,
         };
       };
     }
 
-    this.media?.addEventListener('error', (event: Event) => {
+    this.media?.addEventListener("error", (event: Event) => {
       let { detail: error }: { detail: any } = event as CustomEvent;
 
       // If it is a hls.js error event there will be an error object in the event.
@@ -447,7 +495,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       if (!error?.fatal) return;
 
       this.dispatchEvent(
-        new CustomEvent('error', {
+        new CustomEvent("error", {
           detail: error,
         })
       );
@@ -456,8 +504,8 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
   #setUpCaptionsButton() {
     const onTrackCountChange = () => this.#render();
-    this.media?.textTracks?.addEventListener('addtrack', onTrackCountChange);
-    this.media?.textTracks?.addEventListener('removetrack', onTrackCountChange);
+    this.media?.textTracks?.addEventListener("addtrack", onTrackCountChange);
+    this.media?.textTracks?.addEventListener("removetrack", onTrackCountChange);
   }
 
   #setUpCaptionsMovement() {
@@ -475,11 +523,19 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       // skip line toggle when:
       // - streamType is live, unless secondary color is set or player size is too small
       // - native fullscreen on iPhones
-      return this.streamType === StreamTypes.LIVE && !this.secondaryColor && this.offsetWidth >= 800;
+      return (
+        this.streamType === StreamTypes.LIVE &&
+        !this.secondaryColor &&
+        this.offsetWidth >= 800
+      );
     };
 
     // toggles activeCues for a particular track depending on whether the user is active or not
-    const toggleLines = (track: TextTrack, userInactive: boolean, force = false) => {
+    const toggleLines = (
+      track: TextTrack,
+      userInactive: boolean,
+      force = false
+    ) => {
       if (shouldSkipLineToggle()) {
         return;
       }
@@ -492,14 +548,18 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
         // - cues that are not at the bottom
         //   - line is less than -5
         //   - line is between 0 and 10
-        if (!cue.snapToLines || cue.line < -5 || (cue.line >= 0 && cue.line < 10)) {
+        if (
+          !cue.snapToLines ||
+          cue.line < -5 ||
+          (cue.line >= 0 && cue.line < 10)
+        ) {
           return;
         }
 
         // if the user is active or if the player is paused, the captions should be moved up
         if (!userInactive || this.paused) {
           // for cues that have more than one line, we want to push the cue further up
-          const lines = cue.text.split('\n').length;
+          const lines = cue.text.split("\n").length;
           // start at -3 to account for thumbnails as well.
           // default safari styles are taller than other browsers
           let offset = isSafari ? -2 : -3;
@@ -526,7 +586,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
           cue.line = setTo;
         } else {
           setTimeout(() => {
-            cue.line = cuesmap.get(cue) || 'auto';
+            cue.line = cuesmap.get(cue) || "auto";
           }, 500);
         }
       });
@@ -534,44 +594,51 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
     // this is necessary so that if a cue becomes active while the user is active, we still position it above the control bar
     const cuechangeHandler = () => {
-      toggleLines(selectedTrack, this.mediaController?.hasAttribute('user-inactive') ?? false);
+      toggleLines(
+        selectedTrack,
+        this.mediaController?.hasAttribute("user-inactive") ?? false
+      );
     };
 
     const selectTrack = () => {
-      const tracks = Array.from(this.mediaController?.media?.textTracks || []) as TextTrack[];
+      const tracks = Array.from(
+        this.mediaController?.media?.textTracks || []
+      ) as TextTrack[];
       const newSelectedTrack = tracks.filter(
-        (t) => ['subtitles', 'captions'].includes(t.kind) && t.mode === 'showing'
+        (t) =>
+          ["subtitles", "captions"].includes(t.kind) && t.mode === "showing"
       )[0] as TextTrack;
 
       if (newSelectedTrack !== selectedTrack) {
-        selectedTrack?.removeEventListener('cuechange', cuechangeHandler);
+        selectedTrack?.removeEventListener("cuechange", cuechangeHandler);
       }
 
       selectedTrack = newSelectedTrack;
-      selectedTrack?.addEventListener('cuechange', cuechangeHandler);
+      selectedTrack?.addEventListener("cuechange", cuechangeHandler);
       // it's possible there are currently active cues on the new track
       toggleLines(selectedTrack, this.#userInactive);
     };
 
     selectTrack();
     // update the selected track as necessary
-    this.textTracks?.addEventListener('change', selectTrack);
-    this.textTracks?.addEventListener('addtrack', selectTrack);
+    this.textTracks?.addEventListener("change", selectTrack);
+    this.textTracks?.addEventListener("addtrack", selectTrack);
 
-    if (navigator.userAgent.includes('Chrome/')) {
+    if (navigator.userAgent.includes("Chrome/")) {
       const chromeWorkaround = () => {
         toggleLines(selectedTrack, this.#userInactive, true);
         if (!this.paused) {
           window.requestAnimationFrame(chromeWorkaround);
         }
       };
-      this.addEventListener('playing', () => {
+      this.addEventListener("playing", () => {
         chromeWorkaround();
       });
     }
 
-    this.addEventListener('userinactivechange', () => {
-      const newUserInactive = this.mediaController?.hasAttribute('user-inactive') ?? true;
+    this.addEventListener("userinactivechange", () => {
+      const newUserInactive =
+        this.mediaController?.hasAttribute("user-inactive") ?? true;
 
       if (this.#userInactive === newUserInactive) {
         return;
@@ -583,7 +650,11 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     });
   }
 
-  attributeChangedCallback(attrName: string, oldValue: string | null, newValue: string) {
+  attributeChangedCallback(
+    attrName: string,
+    oldValue: string | null,
+    newValue: string
+  ) {
     // Initialize right after construction when the attributes become available.
     this.#init();
 
@@ -596,36 +667,40 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       case PlayerAttributes.THUMBNAIL_TIME: {
         if (newValue != null && this.tokens.thumbnail) {
           logger.warn(
-            i18n(`Use of thumbnail-time with thumbnail-token is currently unsupported. Ignore thumbnail-time.`).format(
-              {}
-            )
+            i18n(
+              `Use of thumbnail-time with thumbnail-token is currently unsupported. Ignore thumbnail-time.`
+            ).format({})
           );
         }
         break;
       }
       case PlayerAttributes.THUMBNAIL_TOKEN: {
         const { aud } = parseJwt(newValue);
-        if (newValue && aud !== 't') {
+        if (newValue && aud !== "t") {
           logger.warn(
-            i18n(`The provided thumbnail-token should have audience value 't' instead of '{aud}'.`).format({ aud })
+            i18n(
+              `The provided thumbnail-token should have audience value 't' instead of '{aud}'.`
+            ).format({ aud })
           );
         }
         break;
       }
       case PlayerAttributes.STORYBOARD_TOKEN: {
         const { aud } = parseJwt(newValue);
-        if (newValue && aud !== 's') {
+        if (newValue && aud !== "s") {
           logger.warn(
-            i18n(`The provided storyboard-token should have audience value 's' instead of '{aud}'.`).format({ aud })
+            i18n(
+              `The provided storyboard-token should have audience value 's' instead of '{aud}'.`
+            ).format({ aud })
           );
         }
         break;
       }
       case MuxVideoAttributes.PLAYBACK_ID: {
-        if (newValue?.includes('?token')) {
+        if (newValue?.includes("?token")) {
           logger.error(
             i18n(
-              'The specificed playback ID {playbackId} contains a token which must be provided via the playback-token attribute.'
+              "The specificed playback ID {playbackId} contains a token which must be provided via the playback-token attribute."
             ).format({
               playbackId: newValue,
             })
@@ -634,11 +709,22 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
         break;
       }
       case MuxVideoAttributes.STREAM_TYPE: {
-        if (newValue && ![StreamTypes.LIVE, StreamTypes.ON_DEMAND, StreamTypes.UNKNOWN].includes(newValue as any)) {
+        if (
+          newValue &&
+          ![
+            StreamTypes.LIVE,
+            StreamTypes.ON_DEMAND,
+            StreamTypes.UNKNOWN,
+          ].includes(newValue as any)
+        ) {
           // Handle deprecated values by translating to new properties for the time being.
           // NOTE: The value of `streamType` / `stream-type` will be translated at the template
           // level. See template.ts for more information (CJP).
-          if (['ll-live', 'live:dvr', 'll-live:dvr'].includes(this.streamType as any)) {
+          if (
+            ["ll-live", "live:dvr", "ll-live:dvr"].includes(
+              this.streamType as any
+            )
+          ) {
             // NOTE: For now, we won't log any warnings/errors for "deprecated" stream types (CJP).
             // logger.devlog({
             //   file: 'deprecated-stream-type.md',
@@ -646,10 +732,12 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
             //     `The stream type is deprecated: \`{streamType}\`. Please provide stream-type as either: \`on-demand\`, \`live\`. For DVR, please use \`target-live-window="Infinity"\``
             //   ).format({ streamType: this.streamType }),
             // });
-            this.targetLiveWindow = newValue.includes('dvr') ? Number.POSITIVE_INFINITY : 0;
+            this.targetLiveWindow = newValue.includes("dvr")
+              ? Number.POSITIVE_INFINITY
+              : 0;
           } else {
             logger.devlog({
-              file: 'invalid-stream-type.md',
+              file: "invalid-stream-type.md",
               message: i18n(
                 `Invalid stream-type value supplied: \`{streamType}\`. Please provide stream-type as either: \`on-demand\` or \`live\``
               ).format({ streamType: this.streamType }),
@@ -659,7 +747,8 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
           // NOTE: For now, since we are continuing support of the deprecated stream types (namely, "dvr" types) and not advertising the
           // new APIs such as `targetLiveWindow`/`target-live-window`, we will (presumpuously) update the `targetLiveWindow` based on the
           // stream type (CJP).
-          this.targetLiveWindow = newValue === StreamTypes.LIVE ? 0 : Number.NaN;
+          this.targetLiveWindow =
+            newValue === StreamTypes.LIVE ? 0 : Number.NaN;
         }
       }
     }
@@ -678,7 +767,11 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
   }
 
   get preferCmcd() {
-    return (this.getAttribute(MuxVideoAttributes.PREFER_CMCD) as ValueOf<CmcdTypes>) ?? undefined;
+    return (
+      (this.getAttribute(
+        MuxVideoAttributes.PREFER_CMCD
+      ) as ValueOf<CmcdTypes>) ?? undefined
+    );
   }
 
   set preferCmcd(value: ValueOf<CmcdTypes> | undefined) {
@@ -688,16 +781,18 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     } else if (CmcdTypeValues.includes(value)) {
       this.setAttribute(MuxVideoAttributes.PREFER_CMCD, value);
     } else {
-      logger.warn(`Invalid value for preferCmcd. Must be one of ${CmcdTypeValues.join()}`);
+      logger.warn(
+        `Invalid value for preferCmcd. Must be one of ${CmcdTypeValues.join()}`
+      );
     }
   }
 
   get hasPlayed() {
-    return this.mediaController?.hasAttribute('media-has-played') ?? false;
+    return this.mediaController?.hasAttribute("media-has-played") ?? false;
   }
 
   get inLiveWindow() {
-    return this.mediaController?.hasAttribute('media-time-is-live');
+    return this.mediaController?.hasAttribute("media-time-is-live");
   }
 
   get _hls(): PlaybackEngine | undefined {
@@ -712,7 +807,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Gets the theme.
    */
   get theme() {
-    return this.getAttribute(PlayerAttributes.THEME) ?? '';
+    return this.getAttribute(PlayerAttributes.THEME) ?? "";
   }
 
   /**
@@ -736,7 +831,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       if (ThemeAttributeNames.includes(name)) continue;
 
       const value: string | boolean | null = theme.getAttribute(name);
-      props[camelCase(name)] = value === '' ? true : value;
+      props[camelCase(name)] = value === "" ? true : value;
     }
 
     return props;
@@ -755,7 +850,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
       const value: string | boolean | null | undefined = props?.[name];
 
-      if (typeof value === 'boolean' || value == null) {
+      if (typeof value === "boolean" || value == null) {
         this.mediaTheme?.toggleAttribute(kebabCase(name), Boolean(value));
       } else {
         this.mediaTheme?.setAttribute(kebabCase(name), value);
@@ -780,6 +875,30 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       this.setAttribute(MuxVideoAttributes.PLAYBACK_ID, val);
     } else {
       this.removeAttribute(MuxVideoAttributes.PLAYBACK_ID);
+    }
+  }
+
+  get widgets() {
+    return this.getAttribute("widgets") ?? undefined;
+  }
+
+  set widgets(val) {
+    if (val) {
+      this.setAttribute("widgets", val);
+    } else {
+      this.removeAttribute("widgets");
+    }
+  }
+
+  get aspectRatio() {
+    return this.getAttribute("aspect-ratio") ?? undefined;
+  }
+
+  set aspectRatio(val) {
+    if (val) {
+      this.setAttribute("aspect-ratio", val);
+    } else {
+      this.removeAttribute("aspect-ratio");
     }
   }
 
@@ -828,7 +947,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Sets a URL of an image to display, for example, like a movie poster. This can be a still frame from the video, or another image if no video data is available.
    */
   set poster(val) {
-    if (val || val === '') {
+    if (val || val === "") {
       this.setAttribute(VideoAttributes.POSTER, val);
     } else {
       this.removeAttribute(VideoAttributes.POSTER);
@@ -859,7 +978,8 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    */
   get storyboard() {
     // If the storyboardSrc has been explicitly set, assume it should be used
-    if (this.storyboardSrc && !this.tokens.storyboard) return this.storyboardSrc;
+    if (this.storyboardSrc && !this.tokens.storyboard)
+      return this.storyboardSrc;
     if (
       // NOTE: Some audio use cases may have a storyboard (e.g. it's an audio+video stream being played *as* audio)
       // Consider supporting cases (CJP)
@@ -891,7 +1011,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       this.removeAttribute(PlayerAttributes.AUDIO);
       return;
     }
-    this.setAttribute(PlayerAttributes.AUDIO, '');
+    this.setAttribute(PlayerAttributes.AUDIO, "");
   }
 
   get hotkeys() {
@@ -907,14 +1027,16 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       this.removeAttribute(PlayerAttributes.NOHOTKEYS);
       return;
     }
-    this.setAttribute(PlayerAttributes.NOHOTKEYS, '');
+    this.setAttribute(PlayerAttributes.NOHOTKEYS, "");
   }
 
   /**
    * Get the thumbnailTime offset used for the poster image.
    */
   get thumbnailTime() {
-    return toNumberOrUndefined(this.getAttribute(PlayerAttributes.THUMBNAIL_TIME));
+    return toNumberOrUndefined(
+      this.getAttribute(PlayerAttributes.THUMBNAIL_TIME)
+    );
   }
 
   /**
@@ -928,7 +1050,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Get the title shown in the player.
    */
   get title() {
-    return this.getAttribute(PlayerAttributes.TITLE) ?? '';
+    return this.getAttribute(PlayerAttributes.TITLE) ?? "";
   }
 
   /**
@@ -940,7 +1062,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     if (!!val) {
       this.setAttribute(PlayerAttributes.TITLE, val);
     } else {
-      this.removeAttribute('title');
+      this.removeAttribute("title");
     }
     // Calling super.title for tooltip usage
     super.title = val;
@@ -950,7 +1072,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Gets the data URL of a placeholder image shown before the thumbnail is loaded.
    */
   get placeholder() {
-    return getVideoAttribute(this, PlayerAttributes.PLACEHOLDER) ?? '';
+    return getVideoAttribute(this, PlayerAttributes.PLACEHOLDER) ?? "";
   }
 
   /**
@@ -970,7 +1092,10 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     // Fallback to computed style if no attribute is set, causes layout.
     // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
     if (this.mediaTheme) {
-      color = globalThis.getComputedStyle(this.mediaTheme)?.getPropertyValue('--_primary-color')?.trim();
+      color = globalThis
+        .getComputedStyle(this.mediaTheme)
+        ?.getPropertyValue("--_primary-color")
+        ?.trim();
       if (color) return color;
     }
   }
@@ -992,7 +1117,10 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     // Fallback to computed style if no attribute is set, causes layout.
     // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
     if (this.mediaTheme) {
-      color = globalThis.getComputedStyle(this.mediaTheme)?.getPropertyValue('--_secondary-color')?.trim();
+      color = globalThis
+        .getComputedStyle(this.mediaTheme)
+        ?.getPropertyValue("--_secondary-color")
+        ?.trim();
       if (color) return color;
     }
   }
@@ -1012,7 +1140,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     if (!val) {
       this.removeAttribute(PlayerAttributes.DEFAULT_SHOW_REMAINING_TIME);
     } else {
-      this.setAttribute(PlayerAttributes.DEFAULT_SHOW_REMAINING_TIME, '');
+      this.setAttribute(PlayerAttributes.DEFAULT_SHOW_REMAINING_TIME, "");
     }
   }
 
@@ -1038,14 +1166,18 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
       this.removeAttribute(PlayerAttributes.PLAYBACK_RATES);
       return;
     }
-    this.setAttribute(PlayerAttributes.PLAYBACK_RATES, val.join(' '));
+    this.setAttribute(PlayerAttributes.PLAYBACK_RATES, val.join(" "));
   }
 
   /**
    * Get the offset applied to the forward seek button.
    */
   get forwardSeekOffset() {
-    return toNumberOrUndefined(this.getAttribute(PlayerAttributes.FORWARD_SEEK_OFFSET)) ?? 10;
+    return (
+      toNumberOrUndefined(
+        this.getAttribute(PlayerAttributes.FORWARD_SEEK_OFFSET)
+      ) ?? 10
+    );
   }
 
   /**
@@ -1059,7 +1191,11 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Get the offset applied to the backward seek button.
    */
   get backwardSeekOffset() {
-    return toNumberOrUndefined(this.getAttribute(PlayerAttributes.BACKWARD_SEEK_OFFSET)) ?? 10;
+    return (
+      toNumberOrUndefined(
+        this.getAttribute(PlayerAttributes.BACKWARD_SEEK_OFFSET)
+      ) ?? 10
+    );
   }
 
   /**
@@ -1084,7 +1220,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
     if (!val) {
       this.removeAttribute(PlayerAttributes.DEFAULT_HIDDEN_CAPTIONS);
     } else {
-      this.setAttribute(PlayerAttributes.DEFAULT_HIDDEN_CAPTIONS, '');
+      this.setAttribute(PlayerAttributes.DEFAULT_HIDDEN_CAPTIONS, "");
     }
   }
 
@@ -1092,21 +1228,30 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Get the player software name. Used by Mux Data.
    */
   get playerSoftwareName() {
-    return this.getAttribute(MuxVideoAttributes.PLAYER_SOFTWARE_NAME) ?? playerSoftwareName;
+    return (
+      this.getAttribute(MuxVideoAttributes.PLAYER_SOFTWARE_NAME) ??
+      playerSoftwareName
+    );
   }
 
   /**
    * Get the player software version. Used by Mux Data.
    */
   get playerSoftwareVersion() {
-    return this.getAttribute(MuxVideoAttributes.PLAYER_SOFTWARE_VERSION) ?? playerSoftwareVersion;
+    return (
+      this.getAttribute(MuxVideoAttributes.PLAYER_SOFTWARE_VERSION) ??
+      playerSoftwareVersion
+    );
   }
 
   /**
    * Get the beacon collection domain. Used by Mux Data.
    */
   get beaconCollectionDomain() {
-    return this.getAttribute(MuxVideoAttributes.BEACON_COLLECTION_DOMAIN) ?? undefined;
+    return (
+      this.getAttribute(MuxVideoAttributes.BEACON_COLLECTION_DOMAIN) ??
+      undefined
+    );
   }
 
   /**
@@ -1184,7 +1329,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    */
   set noVolumePref(val) {
     if (val) {
-      this.setAttribute(PlayerAttributes.NO_VOLUME_PREF, '');
+      this.setAttribute(PlayerAttributes.NO_VOLUME_PREF, "");
     } else {
       this.removeAttribute(PlayerAttributes.NO_VOLUME_PREF);
     }
@@ -1202,7 +1347,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    */
   set debug(val) {
     if (val) {
-      this.setAttribute(MuxVideoAttributes.DEBUG, '');
+      this.setAttribute(MuxVideoAttributes.DEBUG, "");
     } else {
       this.removeAttribute(MuxVideoAttributes.DEBUG);
     }
@@ -1220,7 +1365,7 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    */
   set disableCookies(val) {
     if (val) {
-      this.setAttribute(MuxVideoAttributes.DISABLE_COOKIES, '');
+      this.setAttribute(MuxVideoAttributes.DISABLE_COOKIES, "");
     } else {
       this.removeAttribute(MuxVideoAttributes.DISABLE_COOKIES);
     }
@@ -1230,7 +1375,11 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Get stream type.
    */
   get streamType() {
-    return this.getAttribute(MuxVideoAttributes.STREAM_TYPE) ?? this.media?.streamType ?? StreamTypes.UNKNOWN;
+    return (
+      this.getAttribute(MuxVideoAttributes.STREAM_TYPE) ??
+      this.media?.streamType ??
+      StreamTypes.UNKNOWN
+    );
   }
 
   /**
@@ -1242,8 +1391,12 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
   get defaultStreamType() {
     return (
-      (this.getAttribute(PlayerAttributes.DEFAULT_STREAM_TYPE) as ValueOf<StreamTypes>) ??
-      (this.mediaController?.getAttribute(PlayerAttributes.DEFAULT_STREAM_TYPE) as ValueOf<StreamTypes>) ??
+      (this.getAttribute(
+        PlayerAttributes.DEFAULT_STREAM_TYPE
+      ) as ValueOf<StreamTypes>) ??
+      (this.mediaController?.getAttribute(
+        PlayerAttributes.DEFAULT_STREAM_TYPE
+      ) as ValueOf<StreamTypes>) ??
       StreamTypes.ON_DEMAND
     );
   }
@@ -1259,7 +1412,9 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
   get targetLiveWindow() {
     // Allow overriding inferred `targetLiveWindow`
     if (this.hasAttribute(PlayerAttributes.TARGET_LIVE_WINDOW)) {
-      return +(this.getAttribute(PlayerAttributes.TARGET_LIVE_WINDOW) as string) as number;
+      return +(this.getAttribute(
+        PlayerAttributes.TARGET_LIVE_WINDOW
+      ) as string) as number;
     }
     return this.media?.targetLiveWindow ?? Number.NaN;
   }
@@ -1283,7 +1438,9 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
    * Get the start time.
    */
   get startTime() {
-    return toNumberOrUndefined(getVideoAttribute(this, MuxVideoAttributes.START_TIME));
+    return toNumberOrUndefined(
+      getVideoAttribute(this, MuxVideoAttributes.START_TIME)
+    );
   }
 
   /**
@@ -1324,7 +1481,9 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
     // NOTE: This condition should never be met. If it is, there is a bug (CJP)
     if (!this.media) {
-      logger.error('underlying media element missing when trying to set metadata. metadata will not be set.');
+      logger.error(
+        "underlying media element missing when trying to set metadata. metadata will not be set."
+      );
       return;
     }
     this.media.metadata = { ...getMetadataFromAttrs(this), ...val };
@@ -1335,7 +1494,9 @@ class MuxPlayerElement extends VideoApiElement implements MuxPlayerElement {
 
     // NOTE: This condition should never be met. If it is, there is a bug (CJP)
     if (!this.media) {
-      logger.error('underlying media element missing when trying to addCuePoints. cuePoints will not be added.');
+      logger.error(
+        "underlying media element missing when trying to addCuePoints. cuePoints will not be added."
+      );
       return;
     }
     return this.media?.addCuePoints(cuePoints);
@@ -1443,8 +1604,8 @@ export function getVideoAttribute(el: MuxPlayerElement, name: string) {
 }
 
 /** @TODO Refactor once using `globalThis` polyfills */
-if (!globalThis.customElements.get('mux-player')) {
-  globalThis.customElements.define('mux-player', MuxPlayerElement);
+if (!globalThis.customElements.get("mux-player")) {
+  globalThis.customElements.define("mux-player", MuxPlayerElement);
   /** @TODO consider externalizing this (breaks standard modularity) */
   (globalThis as any).MuxPlayerElement = MuxPlayerElement;
 }

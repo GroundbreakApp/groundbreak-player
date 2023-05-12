@@ -1,7 +1,7 @@
-import { globalThis, document } from './polyfills';
-import MediaDialog from './media-chrome/dialog';
+import { globalThis, document } from "./polyfills";
+import MediaDialog from "./media-chrome/dialog";
 
-const template = document.createElement('template');
+const template = document.createElement("template");
 template.innerHTML = `
   <style>
     ${MediaDialog.styles}
@@ -41,14 +41,14 @@ class MxpDialog extends MediaDialog {
   constructor() {
     super();
 
-    this.shadowRoot?.querySelector('.close')?.addEventListener('click', () => {
+    this.shadowRoot?.querySelector(".close")?.addEventListener("click", () => {
       this.close();
     });
   }
 }
 
-if (!globalThis.customElements.get('mxp-dialog')) {
-  globalThis.customElements.define('mxp-dialog', MxpDialog);
+if (!globalThis.customElements.get("mxp-dialog")) {
+  globalThis.customElements.define("mxp-dialog", MxpDialog);
   (globalThis as any).MxpDialog = MxpDialog;
 }
 

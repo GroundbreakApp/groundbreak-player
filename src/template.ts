@@ -5,6 +5,7 @@ import cssStr from "./styles.css";
 // @ts-ignore
 import muxTheme from "./media-theme-mux.html";
 import "./dialog";
+import "./widget";
 import { getSrcFromPlaybackId, getStreamTypeFromAttr } from "./helpers";
 import { html } from "./html";
 import { i18n, stylePropsToString } from "./utils";
@@ -117,17 +118,11 @@ export const content = (props: MuxTemplateProps) => html`
       src="${props.poster === "" ? false : props.poster ?? false}"
       placeholder-src="${props.placeholder ?? false}"
     ></media-poster-image>
-    <div
-      style="position: absolute; left:0; right:0; width: 100%; height: 100%; z-index: 99999; pointer-events: none"
+    <groundbreak-widget
+      widgets="${props.widgets}"
+      aspect-ratio="${props.aspectRatio}"
     >
-      <a
-        style="left:50%; top:50px; position: absolute; cursor: pointer"
-        href="https://google.com"
-        target="_blank"
-      >
-        This is test text link
-      </a>
-    </div>
+    </groundbreak-widget>
     <mxp-dialog
       no-auto-hide
       open="${props.isDialogOpen ?? false}"
