@@ -113,6 +113,7 @@ export const content = (props: MuxTemplateProps) => html`
         : html``}
     </mux-video>
     <media-poster-image
+      no-auto-hide
       slot="poster"
       part="poster"
       src="${props.poster === "" ? false : props.poster ?? false}"

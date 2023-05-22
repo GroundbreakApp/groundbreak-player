@@ -20846,6 +20846,7 @@ var content = (props) => {
           />` : html``}
     </mux-video>
     <media-poster-image
+      no-auto-hide
       slot="poster"
       part="poster"
       src="${props.poster === "" ? false : (_B = props.poster) != null ? _B : false}"
