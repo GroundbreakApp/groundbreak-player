@@ -55,7 +55,7 @@ template.innerHTML = `
   </style>
 
   <div id="groundbreak-widget-container" style="position: absolute; margin: auto; left:0; right:0; width: 100%; height: 100%; z-index: 99999; pointer-events: none">
-  </div>;
+  </div>
 `;
 
 class GroundWidget extends globalThis.HTMLElement {
