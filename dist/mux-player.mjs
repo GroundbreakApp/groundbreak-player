@@ -20479,7 +20479,7 @@ template16.innerHTML = `
   </style>
 
   <div id="groundbreak-widget-container" style="position: absolute; margin: auto; left:0; right:0; width: 100%; height: 100%; z-index: 99999; pointer-events: none">
-  </div>;
+  </div>
 `;
 var _resize, resize_fn, _render2, render_fn2, _updateVisibility, updateVisibility_fn;
 var GroundWidget = class extends internalGlobalThis.HTMLElement {
